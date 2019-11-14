@@ -21,17 +21,23 @@ class DataLoaderKt : DataLoader {
     private val toCar = { string: String ->
         string.split(";").run {
             Car(
-                Model(this[0], this[2], this[24], this[25]),
-                this[3],
-                this[8],
-                Energy(this[6], this[7]),
-                this[21],
-                Consumption(
-                    this[11].toBigDecimal(),
-                    this[12].toBigDecimal(),
-                    this[13].toBigDecimal()
+                model = Model(
+                    brand = this[0],
+                    model = this[2],
+                    type = this[24],
+                    swag = this[25]),
+                name = this[3],
+                power = this[8],
+                energy = Energy(this[6], this[7]),
+                weight = this[21],
+                consumption =  Consumption(
+                    urban = this[11].toBigDecimal(),
+                    extraUrban = this[12].toBigDecimal(),
+                    combined = this[13].toBigDecimal()
                 ),
-                Emissions(this[14].toIntOrNull(), this[17].toBigDecimal())
+                emissions = Emissions(
+                    co2= this[14].toIntOrNull(),
+                    nox = this[17].toBigDecimal())
             )
         }
     }
