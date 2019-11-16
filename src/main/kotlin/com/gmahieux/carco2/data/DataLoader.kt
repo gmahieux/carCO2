@@ -1,22 +1,36 @@
 package com.gmahieux.carco2.data
 
+import arrow.core.Either
+import arrow.core.Try
+import arrow.core.handleErrorWith
+import com.gmahieux.carco2.data.DataLoadingError.LocalFileNotAvailable
+import com.gmahieux.carco2.data.DataLoadingError.RemoteFileNotAvailable
 import com.gmahieux.carco2.internal.FileDownloader
 import com.gmahieux.carco2.model.*
 import java.io.File
 import java.math.BigDecimal
 
-class DataLoaderKt : DataLoader {
-    override fun loadData(): List<Car> =
-        runCatching { loadRemoteData() }
-            .recoverCatching { loadLocalData() }
-            .map { it.drop(1) }
-            .getOrThrow()
-            .map (toCar)
+sealed class DataLoadingError(open val cause: Throwable) {
+    data class RemoteFileNotAvailable(override val cause: Throwable) : DataLoadingError(cause)
+    data class LocalFileNotAvailable(override val cause: Throwable) : DataLoadingError(cause)
+}
 
-    private fun loadLocalData() = File(DataLoaderNoLambdas::class.java.getResource("/data.csv").toURI())
-        .readLines()
+class DataLoaderKt {
 
-    private fun loadRemoteData() = FileDownloader().getFile("/data.csv")
+    fun loadData(): Either<DataLoadingError, List<Car>> =
+        loadRemoteData()
+            .handleErrorWith {loadLocalData()}
+            .map { it.drop(1).map(toCar) }
+
+
+    private fun loadLocalData(): Either<DataLoadingError,List<String>> = Try {
+        File(DataLoaderNoLambdas::class.java.getResource("/data.csv").toURI())
+            .readLines()
+    }.toEither { LocalFileNotAvailable(it) }
+
+    private fun loadRemoteData(): Either<DataLoadingError,List<String>>  = Try {
+        FileDownloader().getFile("/data.csv")
+    }.toEither { RemoteFileNotAvailable(it) }
 
     private val toCar = { string: String ->
         string.split(";").run {
@@ -25,19 +39,21 @@ class DataLoaderKt : DataLoader {
                     brand = this[0],
                     model = this[2],
                     type = this[24],
-                    swag = this[25]),
+                    swag = this[25]
+                ),
                 name = this[3],
                 power = this[8],
                 energy = Energy(this[6], this[7]),
                 weight = this[21],
-                consumption =  Consumption(
+                consumption = Consumption(
                     urban = this[11].toBigDecimal(),
                     extraUrban = this[12].toBigDecimal(),
                     combined = this[13].toBigDecimal()
                 ),
                 emissions = Emissions(
-                    co2= this[14].toIntOrNull(),
-                    nox = this[17].toBigDecimal())
+                    co2 = this[14].toIntOrNull(),
+                    nox = this[17].toBigDecimal()
+                )
             )
         }
     }
@@ -47,4 +63,6 @@ class DataLoaderKt : DataLoader {
             null
         else
             BigDecimal(replace(",", "."))
+
+
 }
