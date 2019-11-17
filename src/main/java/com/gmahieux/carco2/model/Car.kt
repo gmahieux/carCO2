@@ -10,12 +10,7 @@ data class Car(
     val weight: String,
     val consumption: Consumption,
     val emissions: Emissions
-) {
-
-    override fun toString(): String {
-        return model.brand + " " + name + " ( " + emissions.toString() + ")"
-    }
-}
+)
 
 data class Model(val brand: String, val model: String, val type: String, val swag: String)
 data class Consumption(

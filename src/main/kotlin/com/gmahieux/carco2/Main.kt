@@ -3,15 +3,16 @@ package com.gmahieux.carco2
 import com.gmahieux.carco2.data.DataLoaderKt
 import com.gmahieux.carco2.data.DataLoadingError
 
-fun main() {
+fun main() =
 
     DataLoaderKt().loadData()
         .fold({
-            println("An error occured : " +
-                when (it) {
-                    is DataLoadingError.RemoteFileNotAvailable -> "Unable to download remote file"
-                    is DataLoadingError.LocalFileNotAvailable -> "Unable to download local file"
-                }
+            println(
+                "An error occured : " +
+                    when (it) {
+                        is DataLoadingError.RemoteFileNotAvailable -> "Unable to download remote file"
+                        is DataLoadingError.LocalFileNotAvailable -> "Unable to download local file"
+                    }
             )
         }, {
             it.filter { it.energy.energyType in listOf("ES", "GO") }
@@ -21,4 +22,3 @@ fun main() {
                 .map { (k, v) -> "$k=$v" }
                 .forEach(::println)
         })
-}

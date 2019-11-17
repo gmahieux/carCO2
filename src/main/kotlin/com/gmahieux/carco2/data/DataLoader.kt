@@ -17,21 +17,6 @@ sealed class DataLoadingError(open val cause: Throwable) {
 
 class DataLoaderKt {
 
-    fun loadData(): Either<DataLoadingError, List<Car>> =
-        loadRemoteData()
-            .handleErrorWith {loadLocalData()}
-            .map { it.drop(1).map(toCar) }
-
-
-    private fun loadLocalData(): Either<DataLoadingError,List<String>> = Try {
-        File(DataLoaderNoLambdas::class.java.getResource("/data.csv").toURI())
-            .readLines()
-    }.toEither { LocalFileNotAvailable(it) }
-
-    private fun loadRemoteData(): Either<DataLoadingError,List<String>>  = Try {
-        FileDownloader().getFile("/data.csv")
-    }.toEither { RemoteFileNotAvailable(it) }
-
     private val toCar = { string: String ->
         string.split(";").run {
             Car(
@@ -57,6 +42,20 @@ class DataLoaderKt {
             )
         }
     }
+
+    fun loadData(): Either<DataLoadingError, List<Car>> =
+        loadRemoteData()
+            .handleErrorWith {loadLocalData()}
+            .map { it.drop(1).map(toCar) }
+
+    private fun loadLocalData(): Either<DataLoadingError,List<String>> = Try {
+        File(DataLoaderNoLambdas::class.java.getResource("/data.csv").toURI())
+            .readLines()
+    }.toEither { LocalFileNotAvailable(it) }
+
+    private fun loadRemoteData(): Either<DataLoadingError,List<String>>  = Try {
+        FileDownloader().getFile("/data.csv")
+    }.toEither { RemoteFileNotAvailable(it) }
 
     private fun String.toBigDecimal() =
         if (isNullOrBlank())
