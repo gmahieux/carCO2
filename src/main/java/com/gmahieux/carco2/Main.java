@@ -1,7 +1,7 @@
 package com.gmahieux.carco2;
 
-import com.gmahieux.carco2.data.DataLoader;
-import com.gmahieux.carco2.data.DataLoaderNoLambdas;
+import com.gmahieux.carco2.data.DataLoaderKt;
+import com.gmahieux.carco2.data.DataLoaderJava8;
 import com.gmahieux.carco2.model.Car;
 
 import java.io.IOException;
@@ -10,20 +10,26 @@ import java.util.*;
 
 public class Main {
 
-    public static void main(String[] args) throws IOException, URISyntaxException {
+    public static void main(String[] args) {
+        DataLoaderJava8 data = new DataLoaderJava8();
+        try {
+            printCo2EmissionHallOfFame(data.loadData());
+        } catch (IOException | URISyntaxException e) {
+            System.out.println("An error occured :\n\tUnable to download data file");
+        }
+    }
 
-        DataLoader data = new DataLoaderNoLambdas();
-        Map<String, List<Integer>> map = new HashMap();
-
+    private static void printCo2EmissionHallOfFame(List<Car> data) {
         //Fill a map containing a list of co2 emission of all models for each car brand
-        for (Car car : data.loadData()) {
+        Map<String, List<Integer>> map = new HashMap();
+        for (Car car : data) {
             if (car.getEnergy().getEnergyType().equals("ES") ||  car.getEnergy().getEnergyType().equals("GO") ) {
                 List<Integer> co2List= map.get(car.getModel().getBrand());
                 if(co2List == null) {
                     co2List = new ArrayList<>();
+                    map.put(car.getModel().getBrand(), co2List);
                 }
                 co2List.add(car.getEmissions().getCo2());
-                map.put(car.getModel().getBrand(), co2List);
             }
         }
 

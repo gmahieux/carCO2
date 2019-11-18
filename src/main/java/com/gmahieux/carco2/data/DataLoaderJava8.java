@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class DataLoaderJava8 implements DataLoader {
+public class DataLoaderJava8 {
 
     public List<Car> loadData() throws IOException, URISyntaxException {
         List<String> data;

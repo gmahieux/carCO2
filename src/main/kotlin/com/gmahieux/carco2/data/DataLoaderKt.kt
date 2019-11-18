@@ -49,7 +49,7 @@ class DataLoaderKt {
             .map { it.drop(1).map(toCar) }
 
     private fun loadLocalData(): Either<DataLoadingError,List<String>> = Try {
-        File(DataLoaderNoLambdas::class.java.getResource("/data.csv").toURI())
+        File(DataLoaderKt::class.java.getResource("/data.csv").toURI())
             .readLines()
     }.toEither { LocalFileNotAvailable(it) }
 
